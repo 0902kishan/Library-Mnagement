@@ -1,0 +1,189 @@
+#include <iostream>
+#include <fstream> //for using input and output
+#include <string>
+#include <vector> //for dynamic array managing
+using namespace std;
+
+class Book
+{
+private:
+    string bookID;
+    string title;
+    string author;
+    double price;
+    int quantity;
+
+public:
+    void accept()
+    {
+        cout << "Enter Book ID: ";
+        cin >> bookID;
+        cin.ignore();
+        cout << "Enter Title: ";
+        getline(cin, title);
+        cout << "Enter Author: ";
+        getline(cin, author);
+        cout << "Enter Price: ";
+        cin >> price;
+        cout << "Enter Quantity: ";
+        cin >> quantity;
+    }
+
+    void saveToFile()
+    {
+        ofstream outFile("books.txt", ios::app);
+        if (outFile.is_open())
+        {
+            outFile << bookID << "," << title << "," << author << "," << price << "," << quantity << endl;
+            outFile.close();
+        }
+        else
+        {
+            cerr << "Unable to open books.txt for writing." << endl;
+        }
+    }
+
+    string getBookID() { return bookID; }
+    int getQuantity() { return quantity; }
+
+    void updateQuantity(int qty) { quantity += qty; }
+};
+
+class Student
+{
+private:
+    string enroll;
+    string name;
+    string branch;
+    int semester;
+    string mobileNumber;
+
+public: // function to accept book from users
+    void accept()
+    {
+        cout << "Enter Enrollment Number: ";
+        cin >> enroll;
+        cin.ignore();
+        cout << "Enter Name: ";
+        getline(cin, name);
+        cout << "Enter Branch: ";
+        getline(cin, branch);
+        cout << "Enter Semester: ";
+        cin >> semester;
+        cout << "Enter Mobile Number: ";
+        cin >> mobileNumber;
+    }
+
+    void saveToFile()
+    { // Save book details to a file in append mode
+        ofstream outFile("students.txt", ios::app);
+        if (outFile.is_open())
+        {
+            outFile << enroll << "," << name << "," << branch << "," << semester << "," << mobileNumber << endl;
+            outFile.close();
+        }
+        else
+        {
+            cerr << "Unable to open students.txt for writing." << endl; // cerr uses for character error display if file not find
+        }
+    }
+
+    string getEnroll() { return enroll; }
+};
+
+void issueBook(vector<Book> &books, const string &bookID)
+{
+    for (auto &book : books)
+    {
+        if (book.getBookID() == bookID)
+        {
+            if (book.getQuantity() > 0)
+            {
+                book.updateQuantity(-1);
+                cout << "Book issued successfully!" << endl;
+            }
+            else
+            {
+                cout << "Book is out of stock!" << endl;
+            }
+            return;
+        }
+    }
+    cout << "Book not found!" << endl;
+}
+
+void returnBook(vector<Book> &books, const string &bookID)
+{
+    for (auto &book : books)
+    {
+        if (book.getBookID() == bookID)
+        {
+            book.updateQuantity(1);
+            cout << "Book returned successfully!" << endl;
+            return;
+        }
+    }
+    cout << "Book not found!" << endl;
+}
+
+int main()
+{
+    vector<Book> books;
+    vector<Student> students;
+    int choice;
+
+    do
+    {
+        cout << "\nLibrary Management System" << endl;
+        cout << "1. Add Book" << endl;
+        cout << "2. Add Student" << endl;
+        cout << "3. Issue Book" << endl;
+        cout << "4. Return Book" << endl;
+        cout << "5. Exit" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice)
+        { // HERE we use switch case for number of possibilities input can be provided by the users
+        case 1:
+        {
+            Book book;
+            book.accept();
+            book.saveToFile();
+            books.push_back(book);
+            break;
+        }
+        case 2:
+        {
+            Student student;
+            student.accept();
+            student.saveToFile();
+            students.push_back(student);
+            break;
+        }
+        case 3:
+        {
+            string bookID;
+            cout << "Enter Book ID to issue: ";
+            cin >> bookID;
+            issueBook(books, bookID);
+            break;
+        }
+        case 4:
+        {
+            string bookID;
+            cout << "Enter Book ID to return: ";
+            cin >> bookID;
+            returnBook(books, bookID);
+            break;
+        }
+        case 5:
+            cout << "Exiting the system..." << endl;
+            break;
+        default:
+            cout << "Invalid choice! Try again." << endl;
+        }
+    } while (choice != 5);
+
+    return 0;
+}
