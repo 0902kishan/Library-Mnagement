@@ -6,7 +6,11 @@ Library Management System Using C++
 
 Description
 
-This case study presents a simple Library Management System developed using C++. The system enables users to manage books and student information, perform book issue and return operations, and store data persistently using text files. It is designed with a user-friendly menu-driven interface and implements essential file handling, class structures, and dynamic data management using vectors.
+This case study presents a simple Library Management System developed using C++.
+The system enables users to manage books and student information, perform book 
+issue and return operations, and store data persistently using text files. 
+It is designed with a user-friendly menu-driven interface and implements
+essential file handling, class structures, and dynamic data management using vectors.
 
 Class Diagram
 
