@@ -1,0 +1,230 @@
+#include <iostream>
+#include <fstream> // For file input and output
+#include <string>
+#include <vector> // For dynamic array management
+using namespace std;
+
+// Book class to manage book details
+class Book
+{
+private:
+    string bookID;  // Unique identifier for the book
+    string title;   // Title of the book
+    string author;  // Author of the book
+    double price;   // Price of the book
+    int quantity;   // Quantity of the book in stock
+
+public:
+    // Method to accept book details from the user
+    void accept()
+    {
+        cout << "Enter Book ID: ";
+        cin >> bookID;
+        cin.ignore(); // Ignore leftover input in the buffer
+        cout << "Enter Title: ";
+        getline(cin, title);
+        cout << "Enter Author: ";
+        getline(cin, author);
+        cout << "Enter Price: ";
+        cin >> price;
+        cout << "Enter Quantity: ";
+        cin >> quantity;
+    }
+
+    // Method to save book details to a file
+    void saveToFile()
+    {
+        ofstream outFile("books.txt", ios::app); // Open file in append mode
+        if (outFile.is_open())
+        {
+            // Save book details in a CSV-like format
+            outFile << bookID << "," << title << "," << author << "," << price << "," << quantity << endl;
+            outFile.close();
+        }
+        else
+        {
+            cerr << "Unable to open books.txt for writing." << endl; // Error if file cannot be opened
+        }
+    }
+
+    // Display book details
+    void display() const
+    {
+        cout << "Book ID: " << bookID << ", Title: " << title
+             << ", Author: " << author << ", Price: $" << price
+             << ", Quantity: " << quantity << endl;
+    }
+
+    // Getters marked as const for compatibility with const objects
+    string getBookID() const { return bookID; }
+    int getQuantity() const { return quantity; }
+
+    // Update the quantity of the book
+    void updateQuantity(int qty) { quantity += qty; }
+};
+
+// Student class to manage student details
+class Student
+{
+private:
+    string enroll;        // Enrollment number
+    string name;          // Student's name
+    string branch;        // Branch of study
+    int semester;         // Current semester
+    string mobileNumber;  // Mobile number
+
+public:
+    // Method to accept student details from the user
+    void accept()
+    {
+        cout << "Enter Enrollment Number: ";
+        cin >> enroll;
+        cin.ignore(); // Ignore leftover input in the buffer
+        cout << "Enter Name: ";
+        getline(cin, name);
+        cout << "Enter Branch: ";
+        getline(cin, branch);
+        cout << "Enter Semester: ";
+        cin >> semester;
+        cout << "Enter Mobile Number: ";
+        cin >> mobileNumber;
+    }
+
+    // Method to save student details to a file
+    void saveToFile()
+    {
+        ofstream outFile("students.txt", ios::app); // Open file in append mode
+        if (outFile.is_open())
+        {
+            // Save student details in a CSV-like format
+            outFile << enroll << "," << name << "," << branch << "," << semester << "," << mobileNumber << endl;
+            outFile.close();
+        }
+        else
+        {
+            cerr << "Unable to open students.txt for writing." << endl; // Error if file cannot be opened
+        }
+    }
+
+    // Getter for enrollment number
+    string getEnroll() const { return enroll; }
+};
+
+// Function to issue a book to a student
+void issueBook(vector<Book> &books, const string &bookID)
+{
+    for (auto &book : books)
+    {
+        if (book.getBookID() == bookID) // Check if the book ID matches
+        {
+            if (book.getQuantity() > 0) // Check if the book is in stock
+            {
+                book.updateQuantity(-1); // Decrease the quantity by 1
+                cout << "Book issued successfully!" << endl;
+            }
+            else
+            {
+                cout << "Book is out of stock!" << endl;
+            }
+            return;
+        }
+    }
+    cout << "Book not found!" << endl; // If no book matches the given ID
+}
+
+// Function to return a book to the library
+void returnBook(vector<Book> &books, const string &bookID)
+{
+    for (auto &book : books)
+    {
+        if (book.getBookID() == bookID) // Check if the book ID matches
+        {
+            book.updateQuantity(1); // Increase the quantity by 1
+            cout << "Book returned successfully!" << endl;
+            return;
+        }
+    }
+    cout << "Book not found!" << endl; // If no book matches the given ID
+}
+
+// Function to display all available books in stock
+void displayAvailableBooks(const vector<Book> &books)
+{
+    cout << "\nList of Available Books:" << endl;
+    for (const auto &book : books)
+    {
+        if (book.getQuantity() > 0) // Display only books that are in stock
+        {
+            book.display();
+        }
+    }
+}
+
+// Main function: Entry point for the Library Management System
+int main()
+{
+    vector<Book> books;       // Dynamic array to store books
+    vector<Student> students; // Dynamic array to store students
+    int choice;
+
+    do
+    {
+        // Display menu options
+        cout << "\nLibrary Management System" << endl;
+        cout << "1. Add Book" << endl;
+        cout << "2. Add Student" << endl;
+        cout << "3. Issue Book" << endl;
+        cout << "4. Return Book" << endl;
+        cout << "5. List Available Books" << endl;
+        cout << "6. Exit" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        // Process user choice using a switch statement
+        switch (choice)
+        {
+        case 1:
+        {
+            Book book;
+            book.accept();          // Accept book details
+            book.saveToFile();      // Save book to file
+            books.push_back(book);  // Add book to the list
+            break;
+        }
+        case 2:
+        {
+            Student student;
+            student.accept();          // Accept student details
+            student.saveToFile();      // Save student to file
+            students.push_back(student); // Add student to the list
+            break;
+        }
+        case 3:
+        {
+            string bookID;
+            cout << "Enter Book ID to issue: ";
+            cin >> bookID;
+            issueBook(books, bookID); // Issue the book
+            break;
+        }
+        case 4:
+        {
+            string bookID;
+            cout << "Enter Book ID to return: ";
+            cin >> bookID;
+            returnBook(books, bookID); // Return the book
+            break;
+        }
+        case 5:
+            displayAvailableBooks(books); // Display books in stock
+            break;
+        case 6:
+            cout << "Exiting the system..." << endl; // Exit the program
+            break;
+        default:
+            cout << "Invalid choice! Try again." << endl; // Handle invalid input
+        }
+    } while (choice != 6); // Repeat until user chooses to exit
+
+    return 0;
+}
