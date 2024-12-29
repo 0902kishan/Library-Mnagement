@@ -1,0 +1,318 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+using namespace std;
+
+// Book class to manage book details
+class Book
+{
+private:
+    string bookID;
+    string title;
+    string author;
+    double price;
+    int quantity;
+
+public:
+    void accept()
+    {
+        cout << "Enter Book ID: ";
+        cin >> bookID;
+        cin.ignore();
+        cout << "Enter Title: ";
+        getline(cin, title);
+        cout << "Enter Author: ";
+        getline(cin, author);
+
+        double tempPrice;
+        cout << "Enter Price: ";
+        cin >> tempPrice;
+        setPrice(tempPrice);
+
+        int tempQuantity;
+        cout << "Enter Quantity: ";
+        cin >> tempQuantity;
+        setQuantity(tempQuantity);
+    }
+
+    void saveToFile()
+    {
+        ofstream outFile("books.txt", ios::app);
+        if (outFile.is_open())
+        {
+            outFile << bookID << "," << title << "," << author << "," << price << "," << quantity << endl;
+            outFile.close();
+        }
+        else
+        {
+            cerr << "Unable to open books.txt for writing." << endl;
+        }
+    }
+
+    void display() const
+    {
+        cout << "Book ID: " << bookID << ", Title: " << title
+             << ", Author: " << author << ", Price: $" << price
+             << ", Quantity: " << quantity << endl;
+    }
+
+    string getBookID() const { return bookID; }
+    int getQuantity() const { return quantity; }
+
+    void updateQuantity(int qty)
+    {
+        if (quantity + qty >= 0)
+        {
+            quantity += qty;
+        }
+        else
+        {
+            cerr << "Error: Quantity cannot be negative!" << endl;
+        }
+    }
+
+    void setPrice(double p)
+    {
+        if (p > 0)
+        {
+            price = p;
+        }
+        else
+        {
+            cerr << "Invalid price! Must be positive." << endl;
+            price = 0; // Default to 0 if invalid
+        }
+    }
+
+    void setQuantity(int q)
+    {
+        if (q >= 0)
+        {
+            quantity = q;
+        }
+        else
+        {
+            cerr << "Invalid quantity! Must be non-negative." << endl;
+            quantity = 0; // Default to 0 if invalid
+        }
+    }
+};
+
+// Student class to manage student details
+class Student
+{
+private:
+    string enroll;
+    string name;
+    string branch;
+    int semester;
+    string mobileNumber;
+
+public:
+    void accept()
+    {
+        cout << "Enter Enrollment Number: ";
+        cin >> enroll;
+        cin.ignore();
+        cout << "Enter Name: ";
+        getline(cin, name);
+        cout << "Enter Branch: ";
+        getline(cin, branch);
+        cout << "Enter Semester: ";
+        cin >> semester;
+        cout << "Enter Mobile Number: ";
+        cin >> mobileNumber;
+    }
+
+    void saveToFile()
+    {
+        ofstream outFile("students.txt", ios::app);
+        if (outFile.is_open())
+        {
+            outFile << enroll << "," << name << "," << branch << "," << semester << "," << mobileNumber << endl;
+            outFile.close();
+        }
+        else
+        {
+            cerr << "Unable to open students.txt for writing." << endl;
+        }
+    }
+
+    string getEnroll() const { return enroll; }
+    string getName() const { return name; }
+};
+
+// Transaction class to track book borrowing
+class Transaction
+{
+private:
+    string bookID;
+    string studentEnroll;
+    int quantityIssued; // Number of books issued in a single transaction
+
+public:
+    Transaction(const string &bID, const string &sEnroll, int qty)
+        : bookID(bID), studentEnroll(sEnroll), quantityIssued(qty) {}
+
+    void saveToFile()
+    {
+        ofstream outFile("transactions.txt", ios::app);
+        if (outFile.is_open())
+        {
+            outFile << bookID << "," << studentEnroll << "," << quantityIssued << endl;
+            outFile.close();
+        }
+        else
+        {
+            cerr << "Unable to open transactions.txt for writing." << endl;
+        }
+    }
+
+    void display() const
+    {
+        cout << "Book ID: " << bookID
+             << ", Borrowed by Student Enrollment: " << studentEnroll
+             << ", Quantity Issued: " << quantityIssued << endl;
+    }
+};
+
+// Function to issue a book to a student
+void issueBook(vector<Book> &books, vector<Student> &students, vector<Transaction> &transactions)
+{
+    string bookID, studentEnroll;
+    int numBooksToIssue;
+    cout << "Enter Book ID to issue: ";
+    cin >> bookID;
+    cout << "Enter Student Enrollment Number: ";
+    cin >> studentEnroll;
+    cout << "Enter the number of books to issue: ";
+    cin >> numBooksToIssue;
+
+    for (auto &book : books)
+    {
+        if (book.getBookID() == bookID)
+        {
+            if (book.getQuantity() >= numBooksToIssue)
+            {
+                book.updateQuantity(-numBooksToIssue);
+                transactions.emplace_back(bookID, studentEnroll, numBooksToIssue);
+                transactions.back().saveToFile();
+                cout << numBooksToIssue << " book(s) issued successfully!" << endl;
+            }
+            else
+            {
+                cout << "Insufficient stock! Only " << book.getQuantity() << " book(s) available." << endl;
+            }
+            return;
+        }
+    }
+    cout << "Book not found!" << endl;
+}
+
+// Function to return a book to the library
+void returnBook(vector<Book> &books, const string &bookID, int quantity)
+{
+    for (auto &book : books)
+    {
+        if (book.getBookID() == bookID)
+        {
+            book.updateQuantity(quantity);
+            cout << quantity << " book(s) returned successfully!" << endl;
+            return;
+        }
+    }
+    cout << "Book not found!" << endl;
+}
+
+// Function to display all available books in stock
+void displayAvailableBooks(const vector<Book> &books)
+{
+    cout << "\nList of Available Books:" << endl;
+    for (const auto &book : books)
+    {
+        if (book.getQuantity() > 0)
+        {
+            book.display();
+        }
+    }
+}
+
+// Function to display all transactions
+void displayTransactions(const vector<Transaction> &transactions)
+{
+    cout << "\nList of Transactions:" << endl;
+    for (const auto &transaction : transactions)
+    {
+        transaction.display();
+    }
+}
+
+int main()
+{
+    vector<Book> books;
+    vector<Student> students;
+    vector<Transaction> transactions;
+    int choice;
+
+    do
+    {
+        cout << "\nLibrary Management System" << endl;
+        cout << "1. Add Book" << endl;
+        cout << "2. Add Student" << endl;
+        cout << "3. Issue Book" << endl;
+        cout << "4. Return Book" << endl;
+        cout << "5. List of Available Books" << endl;
+        cout << "6. List of Transactions" << endl;
+        cout << "7. Exit" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+        {
+            Book book;
+            book.accept();
+            book.saveToFile();
+            books.push_back(book);
+            break;
+        }
+        case 2:
+        {
+            Student student;
+            student.accept();
+            student.saveToFile();
+            students.push_back(student);
+            break;
+        }
+        case 3:
+            issueBook(books, students, transactions);
+            break;
+        case 4:
+        {
+            string bookID;
+            int quantity;
+            cout << "Enter Book ID to return: ";
+            cin >> bookID;
+            cout << "Enter the number of books to return: ";
+            cin >> quantity;
+            returnBook(books, bookID, quantity);
+            break;
+        }
+        case 5:
+            displayAvailableBooks(books);
+            break;
+        case 6:
+            displayTransactions(transactions);
+            break;
+        case 7:
+            cout << "Exiting the system. Goodbye!" << endl;
+            break;
+        default:
+            cout << "Invalid choice. Please try again." << endl;
+        }
+    } while (choice != 7);
+
+    return 0;
+}
